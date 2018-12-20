@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2017 Eurotech and/or its affiliates
+ * Copyright (c) 2011, 2018 Eurotech and/or its affiliates
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,30 +11,37 @@
  *******************************************************************************/
 package org.eclipse.kura.core.status.runnables;
 
-import org.eclipse.kura.KuraException;
 import org.eclipse.kura.core.status.LedManager;
 import org.eclipse.kura.status.CloudConnectionStatusEnum;
 
-public class OnOffStatusRunnable implements Runnable {
+public class OnOffStatusRunnable implements StatusRunnable {
 
     private final LedManager ledManager;
-    private boolean enabled = false;
+    private boolean ledEnabled = false;
 
-    public OnOffStatusRunnable(LedManager ledManager, boolean enabled) {
+    private boolean enabled;
+
+    public OnOffStatusRunnable(LedManager ledManager, boolean ledEnabled) {
         this.ledManager = ledManager;
-        this.enabled = enabled;
+        this.ledEnabled = ledEnabled;
+        this.enabled = true;
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (this.enabled) {
             try {
-                this.ledManager.writeLed(this.enabled);
+                this.ledManager.writeLed(this.ledEnabled);
                 Thread.sleep(CloudConnectionStatusEnum.PERIODIC_STATUS_CHECK_DELAY);
-            } catch (InterruptedException | KuraException e) {
+            } catch (Exception e) {
                 break;
             }
         }
+    }
+
+    @Override
+    public void stopRunnable() {
+        this.enabled = false;
     }
 
 }
